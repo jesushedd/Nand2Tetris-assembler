@@ -70,10 +70,12 @@ def a_ins_to_binary(a_instruction:str, table:dict) -> str:
 
 
 
-"""Translade a valid c instruction to its binary interpretation"""
+"""Translade a valid c instruction to its binary interpretation
+*** a Valid C instruction: M=M+1,JEQ
+                        dest = op, jump"""
 def c_ins_to_binary(c_instruction:str, symbTable:dict) -> str:
 
-    binary_ins = "111"#indentifier of c instr
+    binary_ins = "111"#First 3 most significand bits==1, indentifier of c instr
 
     c_instruction, *jump = c_instruction.split(";")
     *dest, comp = c_instruction.split("=")
@@ -103,7 +105,7 @@ def parse(line:str):
     if instruction == "":
         type_ins = "COMMENT"
     elif re.search(label_pattern, instruction):
-        type_ins == "LABEL"
+        type_ins = "LABEL"
         instruction = instruction.replace("(", "").replace(")","")
     elif "@" in line:
         type_ins = "A_INSTRUCTION"
