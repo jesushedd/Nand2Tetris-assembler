@@ -8,7 +8,7 @@ def main():
     symbol_table=dict()
     type_ins:str
     out = str()
-    fill_symbol_table(symbol_table)#symble table for ops codes and memory directions
+    fill_symbol_table(symbol_table)#symble table for ops codes and memory directions 
     #Paths for io
     file_path = managePath()
     out_path = file_path.with_suffix(".hack")
@@ -54,7 +54,9 @@ def main():
             #if symbol already in symbol table pass and continue with next instruction
             if instruction['body'] in symbol_table:
                 continue
+            memory_address += 1
             symbol_table[instruction['body']] = str(memory_address)
+
 
         #Final pass to replace all symbols
         source.seek(0)    
