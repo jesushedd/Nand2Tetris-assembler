@@ -143,7 +143,7 @@ def parse(line:str):
     instruction = instruction.strip()
     type_ins = ""
     #load re patterns
-    label_pattern = r'\([a-zA-Z][a-zA-Z0-9]*\)'
+    label_pattern = r'\([a-zA-Z][a-zA-Z0-9_]*\)'
     
 
     #CHECK CASES
