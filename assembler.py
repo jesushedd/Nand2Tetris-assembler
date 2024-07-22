@@ -76,7 +76,7 @@ def main():
 
 
 
-"""Returns a valid Path to hack.asm file"""
+"""Returns a valid Path to a hack.asm file"""
 def managePath():
     asm_file = None
     while asm_file is None or not asm_file.exists() or asm_file.suffix != '.asm':
