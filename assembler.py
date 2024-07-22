@@ -8,15 +8,26 @@ def main():
     symbol_table=dict()
     type_ins:str
     out = str()
-    fill_symbol_table(symbol_table)
+    fill_symbol_table(symbol_table)#symble table for ops codes and memory directions
+    #Paths for io
     file_path = managePath()
     out_path = file_path.with_suffix(".hack")
+    #instruction counter 
+    number_of_instruction = -1
+    #memory address counter
+    memory_address = 16 
     
     with open(file_path) as source:
         
         #First pass to find label symbols
         for line in source:
+            countable_instructions = ('A_INSTRUCTION', 'C_INSTRUCTION')
+            
             instruction = parse(line)
+            #Counting number of instructions
+            if instruction['type'] in countable_instructions:
+                number_of_instruction +=1
+                continue
             """if instruction['type'] == "COMMENT":
                 continue
             if instruction['type'] == "A_INSTRUCTION":
@@ -25,10 +36,41 @@ def main():
             if instruction['type'] == "C_INSTRUCTION":
                 out = out + c_ins_to_binary(instruction['body'], symbol_table)
                 """
+            #Proced only with ROM labels
+            if instruction['type'] != 'LABEL':
+                continue
+            #Fill symbol table with labels
+            if instruction['body'] in symbol_table:
+                raise ValueError("Label Collission error.")
+            symbol_table[instruction['body']] = str(number_of_instruction + 1)
+            
         #second pass to find variables symbols and predifined symbols
         source.seek(0)
         for line in source:
-            print(line, end="")
+            instruction = parse(line)
+            #Proceed only with A_instructions that are symbols
+            if instruction['type'] != 'A_INSTRUCTION' or instruction['body'][1:].isdecimal():
+                continue
+            #if symbol already in symbol table pass and continue with next instruction
+            if instruction['body'] in symbol_table:
+                continue
+            symbol_table[instruction['body']] = str(memory_address)
+
+        #Final pass to replace all symbols
+        source.seek(0)    
+        for line in source:
+            instruction = parse(line)
+            if instruction['type'] == "COMMENT":
+                continue
+            if instruction['type'] == "A_INSTRUCTION":
+                out = out + a_ins_to_binary(instruction['body'], symbol_table)
+                continue
+            if instruction['type'] == "C_INSTRUCTION":
+                out = out + c_ins_to_binary(instruction['body'], symbol_table)
+
+            
+
+            
     with open(out_path, "w", encoding="UTF-8") as outfile:
         outfile.write(out)
 
@@ -64,7 +106,10 @@ def fill_symbol_table(table:dict):
 """Translade a valid a instruction to its binary interpretation"""
 def a_ins_to_binary(a_instruction:str, table:dict) -> str: 
     
-    bin_num = bin(int(a_instruction[1:]))
+    try:
+        bin_num = bin(int(a_instruction[1:]))
+    except ValueError:
+        bin_num = bin(int(table[a_instruction[1:]]))
     bin_num = bin_num[2:]
     return f"{bin_num:0>16}\n"
 
@@ -109,8 +154,6 @@ def parse(line:str):
         instruction = instruction.replace("(", "").replace(")","")
     elif "@" in line:
         type_ins = "A_INSTRUCTION"
-        if not line[1:].isdecimal():
-            type_ins = "VARIABLE"
     else:
         type_ins = "C_INSTRUCTION"
     return {'type':type_ins, 'body':instruction}
