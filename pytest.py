@@ -37,6 +37,9 @@ actual = a_ins_to_binary("@99" , sym_table)
 expected = f'{bin(99)[2:]:0>16}\n'
 assert actual == expected
 
+#manage a c instruction with symbols
+actual = 
+
 
 
 
