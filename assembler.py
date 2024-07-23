@@ -8,7 +8,7 @@ def main():
     symbol_table=dict()
     type_ins:str
     out = str()
-    fill_symbol_table(symbol_table)#symble table for ops codes and memory directions 
+    fill_symbol_table(symbol_table)#symble table for ops codes and memory address
     #Paths for io
     file_path = managePath()
     out_path = file_path.with_suffix(".hack")
@@ -49,13 +49,16 @@ def main():
         for line in source:
             instruction = parse(line)
             #Proceed only with A_instructions that are symbols
-            if instruction['type'] != 'A_INSTRUCTION' or instruction['body'][1:].isdecimal():
+            if instruction['type'] != 'A_INSTRUCTION' or instruction['body'].isdecimal():
                 continue
             #if symbol already in symbol table pass and continue with next instruction
             if instruction['body'] in symbol_table:
                 continue
+            #else increase memory address counter and add symbol to symbol table with it's value
             memory_address += 1
             symbol_table[instruction['body']] = str(memory_address)
+
+    
 
 
         #Final pass to replace all symbols
@@ -75,6 +78,7 @@ def main():
             
     with open(out_path, "w", encoding="UTF-8") as outfile:
         outfile.write(out)
+        print("Succes!! asm converted to hack binaries")
 
 
 
@@ -105,19 +109,19 @@ def fill_symbol_table(table:dict):
             table[row['symbol']] = row['value'] 
 
 
-"""Translade a valid a instruction to its binary interpretation"""
+"""Translade a valid A instruction to its binary interpretation"""
 def a_ins_to_binary(a_instruction:str, table:dict) -> str: 
     
     try:
-        bin_num = bin(int(a_instruction[1:]))
+        bin_num = bin(int(a_instruction))
     except ValueError:
-        bin_num = bin(int(table[a_instruction[1:]]))
+        bin_num = bin(int(table[a_instruction]))
     bin_num = bin_num[2:]
     return f"{bin_num:0>16}\n"
 
 
 
-"""Translade a valid c instruction to its binary interpretation
+"""Translade a valid c instruction to its binary interpretation, values taken from a symbol table
 *** a Valid C instruction: M=M+1,JEQ
                         dest = op, jump"""
 def c_ins_to_binary(c_instruction:str, symbTable:dict) -> str:
@@ -145,7 +149,7 @@ def parse(line:str):
     instruction = instruction.strip()
     type_ins = ""
     #load re patterns
-    label_pattern = r'\([a-zA-Z][a-zA-Z0-9_]*\)'
+    label_pattern = r'\([a-zA-Z][a-zA-Z0-9_.$]*\)'
     
 
     #CHECK CASES
@@ -156,6 +160,7 @@ def parse(line:str):
         instruction = instruction.replace("(", "").replace(")","")
     elif "@" in line:
         type_ins = "A_INSTRUCTION"
+        instruction = instruction[1:]
     else:
         type_ins = "C_INSTRUCTION"
     return {'type':type_ins, 'body':instruction}
